@@ -74,7 +74,7 @@ export async function PATCH(
     const updatedResume = await ResumeModel.findByIdAndUpdate(
       {
         _id: resumeId,
-        user_id: user.userId,
+        user_id: user,
       },
       {
         $set: body,
