@@ -1,0 +1,461 @@
+Ye error tab aata hai jab project me **TypeScript installed nahi hota** aur `npx` ko local `tsc` compiler nahi milta.
+
+### Step 1: TypeScript install karo
+
+Project ke root folder me:
+
+```bash
+npm install --save-dev typescript
+```
+
+Ya globally:
+
+```bash
+npm install -g typescript
+```
+
+Lekin project-level installation better hai.
+
+---
+
+### Step 2: Verify karo
+
+```bash
+npx tsc --version
+```
+
+Output kuch aisa aana chahiye:
+
+```bash
+Version 5.x.x
+```
+
+---
+
+### Step 3: tsconfig generate karo
+
+Ab ye command chalegi:
+
+```bash
+npx tsc --init
+```
+
+Isse `tsconfig.json` create ho jayegi.
+
+---
+
+### Agar phir bhi issue aaye
+
+Check karo package.json me TypeScript installed hai ya nahi:
+
+```bash
+npm list typescript
+```
+
+Agar output me:
+
+```bash
+(empty)
+```
+
+aa raha hai to install properly nahi hua.
+
+---
+
+### Tiny Cats Backend (Node + TS) ke liye recommended setup
+
+```bash
+npm init -y
+
+npm install express
+
+npm install -D typescript ts-node nodemon @types/node @types/express
+
+npx tsc --init
+```
+
+Aur `package.json` me:
+
+```json
+"scripts": {
+  "dev": "nodemon src/index.ts",
+  "build": "tsc",
+  "start": "node dist/index.js"
+}
+```
+
+Agar tum apna `package.json` bhej do to main dekhkar bata sakta hun ki TypeScript install hua hai ya nahi aur Tiny Cats backend ke liye exact `tsconfig.json` bhi de sakta hun.
+
+main npm i -D typescript tsc @types/node kiya tha
+
+Problem yahi hai. Tumne:
+
+```bash
+npm i -D typescript tsc @types/node
+```
+
+install kiya hai.
+
+Yahan **`tsc` package alag package hai**, aur ye TypeScript compiler nahi hai. Is wajah se command confuse ho rahi hai aur ye message aa raha hai:
+
+```text
+This is not the tsc command you are looking for
+```
+
+### Check karo
+
+```bash
+npm list tsc
+```
+
+Agar output me `tsc` package dikhe to use remove karo:
+
+```bash
+npm uninstall tsc
+```
+
+### Fir TypeScript reinstall karo
+
+```bash
+npm install -D typescript @types/node
+```
+
+### Verify
+
+```bash
+npx tsc --version
+```
+
+Expected:
+
+```text
+Version 5.x.x
+```
+
+### Ab tsconfig banao
+
+```bash
+npx tsc --init
+```
+
+---
+
+Agar phir bhi issue aaye to:
+
+```bash
+cat package.json
+```
+
+ya Windows PowerShell me:
+
+```powershell
+Get-Content package.json
+```
+
+ka output bhej do. Main exact bata dunga project me kya conflict hai.
+
+An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.
+
+
+
+Ye TypeScript ka common error hai.
+
+### Error
+
+```ts
+import app from "./app.ts";
+```
+
+Agar tum `.ts` extension ke saath import karoge to TypeScript by default error dega:
+
+```text
+An import path can only end with a '.ts' extension when
+'allowImportingTsExtensions' is enabled.
+```
+
+---
+
+### Solution 1 (Recommended)
+
+`.ts` extension hata do:
+
+```ts
+// ❌
+import app from "./app.ts";
+
+// ✅
+import app from "./app";
+```
+
+Yehi standard TypeScript/Node.js practice hai.
+
+---
+
+### Solution 2
+
+Agar tum explicitly `.ts` use karna chahte ho to `tsconfig.json` me:
+
+```json
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  }
+}
+```
+
+Lekin ye tabhi use hota hai jab tum specific ESM setup use kar rahe ho. Normally iski zarurat nahi padti.
+
+---
+
+### Tiny Cats Backend ke liye
+
+Agar structure kuch aisa hai:
+
+```text
+src/
+ ├── server.ts
+ ├── app.ts
+ ├── routes/
+ │    └── cat.routes.ts
+```
+
+To imports aise hone chahiye:
+
+```ts
+import app from "./app";
+import catRoutes from "./routes/cat.routes";
+```
+
+**`.ts` mat lagao.**
+
+---
+
+Agar apna `tsconfig.json` aur jis line par error aa raha hai wo import statement bhej do, to main exact bata dunga ki CommonJS use kar rahe ho, ESM use kar rahe ho, ya NodeNext configuration ki wajah se error aa raha hai.
+
+
+
+Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './src/app.js'?
+
+
+Ab jo error aa raha hai usse lag raha hai ki tumhare `tsconfig.json` me:
+
+```json
+{
+  "module": "NodeNext",
+  "moduleResolution": "NodeNext"
+}
+```
+
+ya
+
+```json
+{
+  "module": "Node16",
+  "moduleResolution": "Node16"
+}
+```
+
+set hai.
+
+NodeNext/Node16 me TypeScript compile hone ke baad Node actual `.js` files run karta hai, isliye imports me `.js` extension likhna padta hai.
+
+### Agar tumhara code hai:
+
+```ts
+import app from './src/app';
+```
+
+To ise karo:
+
+```ts
+import app from './src/app.js';
+```
+
+Dhyan do:
+
+* Source file `app.ts` hi rahegi.
+* Import me `.js` likhoge.
+* TypeScript compile karke `app.js` generate karega.
+
+---
+
+### Example
+
+**app.ts**
+
+```ts
+import express from 'express';
+
+const app = express();
+
+export default app;
+```
+
+**server.ts**
+
+```ts
+import app from './app.js';
+
+app.listen(3000, () => {
+  console.log('Server running');
+});
+```
+
+---
+
+### Alternative (simpler for beginners)
+
+Agar tum NodeNext ka use nahi karna chahte, to `tsconfig.json` me:
+
+```json
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node"
+  }
+}
+```
+
+kar do.
+
+Phir imports normal rahenge:
+
+```ts
+import app from './src/app';
+```
+
+aur `.js` extension ki zarurat nahi padegi.
+
+---
+
+Apna `tsconfig.json` bhej do. Main dekhkar bata dunga ki Tiny Cats backend ke liye CommonJS rakhna better hai ya NodeNext, aur exact configuration de dunga.
+
+
+
+
+npm run dev
+
+> backend@1.0.0 dev
+> ts-node server.ts
+
+Error: Cannot find module 'E:\COHORT 2.0\Typescript\tiny-cats\backend\src\app.js' imported from E:\COHORT 2.0\Typescript\tiny-cats\backend\server.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+    at moduleResolve (node:internal/modules/esm/resolve:861:10)
+    at defaultResolve (node:internal/modules/esm/resolve:988:11)
+    at ModuleLoader.#cachedDefaultResolve (node:internal/modules/esm/loader:697:20)
+    at ModuleLoader.#resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:714:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:746:52)
+    at ModuleLoader.#resolve (node:internal/modules/esm/loader:679:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:599:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:162:33)
+    at ModuleJob.link (node:internal/modules/esm/module_job:252:17) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///E:/COHORT%202.0/Typescript/tiny-cats/backend/src/app.js'
+}
+(base) PS E:\COHORT 2.0\Typescript\tiny-cats\backend> 
+
+
+
+
+
+
+Ab problem clear hai.
+
+Tumne import ko:
+
+```ts
+import app from './src/app.js';
+```
+
+kar diya hai, lekin project run kar rahe ho:
+
+```bash
+ts-node server.ts
+```
+
+`ts-node` directly `.ts` files run karta hai. Us waqt `app.js` file exist hi nahi karti, sirf `app.ts` hoti hai. Isliye:
+
+```text
+Cannot find module .../src/app.js
+```
+
+aa raha hai.
+
+### Mujhe lag raha hai tum NodeNext aur ts-node ko mix kar rahe ho.
+
+#### Option 1 (Recommended for learning TypeScript + Express)
+
+`tsconfig.json` me ye use karo:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+Aur imports:
+
+```ts
+import app from './src/app';
+```
+
+`package.json`
+
+```json
+{
+  "scripts": {
+    "dev": "ts-node server.ts"
+  }
+}
+```
+
+Ye sabse simple setup hai.
+
+---
+
+#### Option 2 (NodeNext / ESM)
+
+Agar `package.json` me:
+
+```json
+{
+  "type": "module"
+}
+```
+
+hai aur NodeNext use karna hai, to normal `ts-node` nahi chalega.
+
+Script honi chahiye:
+
+```json
+{
+  "scripts": {
+    "dev": "node --loader ts-node/esm server.ts"
+  }
+}
+```
+
+Aur imports:
+
+```ts
+import app from './src/app.js';
+```
+
+---
+
+### Abhi exact diagnosis ke liye mujhe 3 cheezein bhejo:
+
+**package.json**
+
+**tsconfig.json**
+
+**server.ts**
+
+Mujhe 99% lag raha hai ki tumhare `package.json` me `"type": "module"` hai aur tsconfig NodeNext par hai. Main exact configuration bata dunga aur 2 minute me fix ho jayega.
