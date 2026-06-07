@@ -62,4 +62,6 @@ const transporter = new StdioServerTransport();
 
 server.connect(transporter)
 
-console.log("Tiny cats mcp running...")
+//yeh part dikkat karta hain jab backend yaaa kahin third place se call karo tab: yeh execution ko thodi der ke liye hold me rakhta hain.
+//isliye yahan console.log ke place par console.error likhte hain.
+console.error("Tiny cats mcp running...")
