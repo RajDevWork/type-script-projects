@@ -30,3 +30,6 @@ server.registerTool("recommend_cats",{
         ]
     }
 })
+
+
+console.log("Tiny cats mcp running...")
