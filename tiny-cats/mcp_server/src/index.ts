@@ -32,4 +32,10 @@ server.registerTool("recommend_cats",{
 })
 
 
+
+//always written after registering tools - connecting tools
+const transporter = new StdioServerTransport();
+
+server.connect(transporter)
+
 console.log("Tiny cats mcp running...")
