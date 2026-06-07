@@ -2,6 +2,7 @@ import express from 'express';
 import CatRouter from './routes/cat.routes'
 import AiRouter from './routes/ai.routes';
 import aiRecommendRoutes from './routes/aiRecommend.routes';
+import McpRoutes from './routes/testMcp.route'
 const app = express();
 
 app.use(express.json());
@@ -9,6 +10,7 @@ app.use("/api/cats", CatRouter);
 app.use("/api/ai", AiRouter);
 app.use("/api/aiRecommend", aiRecommendRoutes);
 
+app.use("/api/mcp",McpRoutes)
 // app.get('/', (req: express.Request, res: express.Response) => {
 //   res.send({
 //     success: true,
